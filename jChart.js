@@ -176,4 +176,12 @@ var jChart = function() {
         }
         return returnObj;
     }
+
+    if (typeof define === "function" && define.amd) {
+        define(chart);
+    } else if (typeof module === "object" && module.exports) {
+        module.exports = chart;
+    } else {
+        this.jChart = chart;
+    }
 }
