@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <script type="text/javascript" src="../lib/d3.js"></script>
+        <script type="text/javascript" src="../jChart.js"></script>
+    </head>
+    <body>
+        <div id="pie"></div>
+    </body>
+    <script type="text/javascript">
+        var data1 = [
+            {
+                key : 1,
+                value : 10
+            },
+            {
+                key : 2,
+                value : 30
+            },
+            {
+                key : 3,
+                value : 10
+            },
+            {
+                key : 4,
+                value : 50
+            },
+            {
+                key : 5,
+                value : 20
+            },
+            {
+                key : 6,
+                value : 30
+            },
+        ];
+        
+        var pie = new JChart().Pie("#pie", data1, {"type":"radius"});
+        pie.initChart();
+    </script>
+</html>
