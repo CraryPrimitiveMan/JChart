@@ -172,8 +172,8 @@ window.JChart = function() {
     chart.Bar = function(elem, data, options) {
         chart.Bar.defaults = {
             margin : { top: 20, right: 40, bottom: 20, left: 40 },
-            width : 480,
-            height : 200,
+            width : 580,
+            height : 300,
             opacity : 1,
             colors: chart.colors,
             animation : { enabled : true, time : 1000, delayTime : 0 },
@@ -278,11 +278,11 @@ window.JChart = function() {
     chart.Line = function(elem, data, options) {
         chart.Line.defaults = {
             margin : { top: 20, right: 40, bottom: 20, left: 40 },
-            width : 480,
-            height : 200,
+            width : 580,
+            height : 300,
             opacity : 1,
             colors: chart.colors,
-            animation : { enabled : true, time : 1000, delayTime : 0 },
+            animation : { enabled : true, time : 3000, delayTime : 0 },
             field : { valueField : chart.fields.defaultValue, textField : chart.fields.defaultText}
         };
 
@@ -290,12 +290,90 @@ window.JChart = function() {
         return new Line(elem, data, config);
     }
 
-    var Line= function(elem, data, config) {
-        //TODO
+    var Line = function(elem, data, config) {
+        var self = this;
+
+        this.elem = elem;
+        this.data = data;
+        this.config = config;
+
+        var parseDate = d3.time.format("%d-%b-%y").parse;
+        data.forEach(function(d) {
+            d[config.field.textField] = parseDate(d[config.field.textField]);
+        });
+
+        this.x = d3.time.scale()
+            .range([0, config.width])
+            .domain(d3.extent(data, function(d) { return d[config.field.textField]; }));
+
+        this.y = d3.scale.linear()
+            .range([config.height, 0])
+            .domain(d3.extent(data, function(d) { return d[config.field.valueField]; }));
+
+        this.xAxis = d3.svg.axis()
+            .scale(self.x)
+            .orient("bottom")
+            .tickSize(1);
+
+        this.yAxis = d3.svg.axis()
+            .scale(self.y)
+            .orient("left")
+            .tickSize(1);
+
+        this.line = d3.svg.line()
+            .x(function(d) { return self.x(d[config.field.textField]); })
+            .y(function(d) { return self.y(d[config.field.valueField]); });
+
+        this.color = d3.scale.ordinal()
+            .range(config.colors);
+
+        return self;
     }
 
     Line.prototype.initChart = function() {
-        //TODO
+         var self = this;
+
+        var svg = d3.select(self.elem).append("svg")
+            .attr("width", self.config.width + self.config.margin.left + self.config.margin.right)
+            .attr("height", self.config.height + self.config.margin.top + self.config.margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + self.config.margin.left + "," + self.config.margin.bottom + ")");
+
+        svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + self.config.height + ")")
+              .call(self.xAxis);
+
+        svg.append("g")
+              .attr("class", "y axis")
+              .call(self.yAxis);
+            // .append("text")
+            //   .attr("transform", "rotate(-90)")
+            //   .attr("y", 6)
+            //   .attr("dy", ".71em")
+            //   .style("text-anchor", "end")
+            //   .text("");
+
+        var path = svg.append("path")
+            .datum(self.data)
+            .attr("class", "line")
+            .style("fill", "none")
+            .style("stroke", function(d, i){
+                return self.color(i);
+            })
+            .attr("d", self.line);
+
+        if(self.config.animation && self.config.animation.enabled) {
+            path.style("stroke-dasharray", "2000, 2000")
+                .transition()
+                .delay(self.config.animation.delayTime)
+                .duration(self.config.animation.time)
+                .styleTween("stroke-dashoffset", function() {
+                    return d3.interpolateNumber(2000, 0);
+                });
+        }
+
+        return self;
     }
 
 
