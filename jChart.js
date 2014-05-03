@@ -7,16 +7,17 @@ window.JChart = function() {
         defaultValue : "value"
     };
 
+    chart.colors = ['#38c4a9', '#9bcd55', '#54afee', '#f9ab20', "#ff7d73", "#f9cb8f", "#f3f5c4", "#93edd4", "#3cbac8", "#378daf"];
+
     chart.Pie = function(elem, data, options) {
         chart.Pie.defaults = {
             margin : { top: 20, right: 40, bottom: 20, left: 40 },
             width : 300,
             height : 250,
             radius : 125,
-            radiusMin : 50,
             opacity : 0.8,
+            colors : chart.colors,
             animation : { enabled : true, time : 1000, delayTime : 0 },
-            type: 'angle', //'radius'
             field : { valueField : chart.fields.defaultValue, textField : chart.fields.defaultText},
             hooks: {
                 // preInitHooks : function(){},                   // 在初始化之前执行  called before initialization.
@@ -41,6 +42,7 @@ window.JChart = function() {
 
         var config = (options) ? mergeChartConfig(chart.Pie.defaults, options) : chart.Pie.defaults;
         config.innerRadius = 0;
+        config.type = chart.pieTypes[0];
 
         return new Pie(elem, data, config);
     };
@@ -53,6 +55,7 @@ window.JChart = function() {
             outerRadius : 125,
             innerRadius : 85,
             opacity : 0.8,
+            colors : chart.colors,
             animation : { enabled : true, time : 1000, delayTime : 0 },
             field : { valueField : chart.fields.defaultValue, textField : chart.fields.defaultText}
         };
@@ -64,8 +67,28 @@ window.JChart = function() {
         return new Pie(elem, data, config);
     };
 
+    chart.PolarArea = function(elem, data, options) {
+        chart.PolarArea.defaults = {
+            margin : { top: 20, right: 40, bottom: 20, left: 40 },
+            width : 300,
+            height : 250,
+            radius : 125,
+            radiusMin : 50,
+            opacity : 0.8,
+            colors : chart.colors,
+            animation : { enabled : true, time : 1000, delayTime : 0 },
+            field : { valueField : chart.fields.defaultValue, textField : chart.fields.defaultText},
+        };
+
+        var config = (options) ? mergeChartConfig(chart.PolarArea.defaults, options) : chart.PolarArea.defaults;
+        config.innerRadius = 0;
+        config.type = chart.pieTypes[1];
+
+        return new Pie(elem, data, config);
+    };
+
     var Pie = function(elem, data, config) {
-        self = this;
+        var self = this;
         this.elem = elem;
         this.data = data;
         this.config = config;
@@ -79,9 +102,6 @@ window.JChart = function() {
                 })])
                 .range([self.config.radiusMin, self.config.radius]);
         }
-
-
-        this.colors = ["#f19181", "#f9cb8f", "#f3f5c4", "#93edd4", "#3cbac8", "#378daf", "#ff8c00"];
 
         this.arc = d3.svg.arc()
             .outerRadius(function(d) {
@@ -107,10 +127,13 @@ window.JChart = function() {
                 }
                 return 1;
             });
+
+        this.color = d3.scale.ordinal()
+             .range(config.colors);
     };
 
     Pie.prototype.initChart = function() {
-        self = this;
+        var self = this;
         
         var svg = d3.select(self.elem).append("svg")
             .attr("width", self.config.width + self.config.margin.left + self.config.margin.right)
@@ -125,7 +148,7 @@ window.JChart = function() {
 
         var path = g.append("path")
             .style("fill", function(d, i) {
-                return self.colors[i];
+                return self.color(i);
             })
             .style("opacity", self.config.opacity);
 
@@ -145,6 +168,136 @@ window.JChart = function() {
 
         return self;
     };
+
+    chart.Bar = function(elem, data, options) {
+        chart.Bar.defaults = {
+            margin : { top: 20, right: 40, bottom: 20, left: 40 },
+            width : 480,
+            height : 200,
+            opacity : 1,
+            colors: chart.colors,
+            animation : { enabled : true, time : 1000, delayTime : 0 },
+            field : { valueField : chart.fields.defaultValue, textField : chart.fields.defaultText}
+        };
+
+        var config = (options) ? mergeChartConfig(chart.Bar.defaults, options) : chart.Bar.defaults;
+        return new Bar(elem, data, config);
+    }
+
+    var Bar = function(elem, data, config) {
+        var self = this;
+
+        this.elem = elem;
+        this.data = data;
+        this.config = config;
+
+        this.x = d3.scale.ordinal()
+            .rangeRoundBands([0, config.width], .3)
+            .domain(data.map(function(d) {
+                return d[config.field.textField];
+            }));
+
+        this.y = d3.scale.linear()
+            .range([config.height, 0])
+            .domain([0, d3.max(data, function(d) {
+                return d[config.field.valueField];
+            })]);
+
+        this.xAxis = d3.svg.axis()
+            .scale(this.x)
+            .orient("bottom")
+            .tickSize(1);
+
+        this.yAxis = d3.svg.axis()
+            .scale(this.y)
+            .orient("left")
+            .ticks("")
+            .tickSize(1);
+
+        this.color = d3.scale.ordinal()
+             .range(config.colors);
+
+        return self;
+    }
+
+    Bar.prototype.initChart = function() {
+        var self = this;
+
+        var svg = d3.select(self.elem).append("svg")
+            .attr("width", self.config.width + self.config.margin.left + self.config.margin.right)
+            .attr("height", self.config.height + self.config.margin.top + self.config.margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + self.config.margin.left + "," + self.config.margin.bottom + ")");
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + self.config.height + ")")
+            .call(self.xAxis);
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(self.yAxis);
+
+        var bar = svg.selectAll(".bar")
+            .data(self.data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) {
+                return self.x(d[self.config.field.textField]);
+            })
+            .attr("width", self.x.rangeBand())
+            .style("fill", function(d, i) {
+                return self.color(i);
+            });
+
+        if (self.config.animation && self.config.animation.enabled) {
+            bar.attr("y", self.y(0))
+                .attr("height", 0)
+                .transition()
+                .ease("bounce")
+                .delay(self.config.animation.delayTime)
+                .duration(self.config.animation.time)
+                .attr("y", function(d) {
+                    return self.y(d[self.config.field.valueField]);
+                })
+                .attr("height", function(d) {
+                    return self.config.height - self.y(d[self.config.field.valueField]);
+                });
+        } else {
+            bar.attr("y", function(d) {
+                    return self.y(d[self.config.field.valueField]);
+                })
+                .attr("height", function(d) {
+                    return self.config.height - self.y(d[self.config.field.valueField]);
+                });
+        }
+
+        return self;
+    }
+
+    chart.Line = function(elem, data, options) {
+        chart.Line.defaults = {
+            margin : { top: 20, right: 40, bottom: 20, left: 40 },
+            width : 480,
+            height : 200,
+            opacity : 1,
+            colors: chart.colors,
+            animation : { enabled : true, time : 1000, delayTime : 0 },
+            field : { valueField : chart.fields.defaultValue, textField : chart.fields.defaultText}
+        };
+
+        var config = (options) ? mergeChartConfig(chart.Line.defaults, options) : chart.Line.defaults;
+        return new Line(elem, data, config);
+    }
+
+    var Line= function(elem, data, config) {
+        //TODO
+    }
+
+    Line.prototype.initChart = function() {
+        //TODO
+    }
+
 
     function extend() {
         var options, name, src, copy, copyIsArray, clone,
@@ -234,12 +387,11 @@ window.JChart = function() {
         return returnObj;
     };
 
-    // if (typeof define === "function" && define.amd) {
-    //     define(chart);
-    // } else if (typeof module === "object" && module.exports) {
-    //     module.exports = chart;
-    // } else {
-    //     this.jChart = chart;
-    // }
-    //return chart;
+    if (typeof define === "function" && define.amd) {
+        define(chart);
+    } else if (typeof module === "object" && module.exports) {
+        module.exports = chart;
+    } else {
+        this.jChart = chart;
+    }
 }

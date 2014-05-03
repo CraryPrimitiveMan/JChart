@@ -4,10 +4,10 @@
         <script type="text/javascript" src="../jChart.js"></script>
     </head>
     <body>
-        <div id="pie"></div>
+        <div id="polarArea"></div>
     </body>
     <script type="text/javascript">
-        var data1 = [
+        var data = [
             {
                 key : 1,
                 value : 10
@@ -34,7 +34,7 @@
             },
         ];
         
-        var pie = new JChart().Pie("#pie", data1, {"type":"radius"});
-        pie.initChart();
+        var polarArea = new JChart().PolarArea("#polarArea", data);
+        polarArea.initChart();
     </script>
 </html>

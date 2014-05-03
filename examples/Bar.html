@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <script type="text/javascript" src="../lib/d3.js"></script>
+        <script type="text/javascript" src="../jChart.js"></script>
+    </head>
+    <body>
+        <div id="bar"></div>
+    </body>
+    <script type="text/javascript">
+        var data = [
+            {
+                text : 1,
+                value : 10
+            },
+            {
+                text : 2,
+                value : 30
+            },
+            {
+                text : 3,
+                value : 10
+            },
+            {
+                text : 4,
+                value : 50
+            },
+            {
+                text : 5,
+                value : 20
+            },
+            {
+                text : 6,
+                value : 30
+            },
+            {
+                text : 7,
+                value : 30
+            },
+            {
+                text : 8,
+                value : 10
+            },
+            {
+                text : 9,
+                value : 50
+            },
+            {
+                text : 10,
+                value : 20
+            },
+            {
+                text : 11,
+                value : 30
+            },
+        ];
+        
+        var bar = new JChart().Bar("#bar", data);
+        bar.initChart();
+    </script>
+</html>
