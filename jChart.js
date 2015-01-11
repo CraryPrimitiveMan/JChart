@@ -1,4 +1,4 @@
-window.JChart = function() {
+(function(window) {
     var chart = this;
 
     chart.pieTypes = ['angle', 'radius'];
@@ -29,7 +29,7 @@ window.JChart = function() {
                 // preDrawSeriesHooks : function(){},             // 在绘制每个坐标轴之前执行  called before each series is drawn.
                 // postDrawSeriesHooks : function(){},            // 在绘制每个坐标轴之后执行  called after each series is drawn.
                 // preDrawLegendHooks : function(){},             // 在绘制图例之前执行，图例就是指图表中的标识 called before the legend is drawn.
-                // addLegendRowHooks : function(){},              // 在绘制图例之后执行，所以插件可以在图例表里添加几行  
+                // addLegendRowHooks : function(){},              // 在绘制图例之后执行，所以插件可以在图例表里添加几行
                 //                                                // called at the end of legend draw, so plugins can add rows to the legend table.
                 // preSeriesInitHooks : function(){},             // 在数据线初始化之前执行  called before series is initialized.
                 // postSeriesInitHooks : function(){},            // 在数据线初始化之后执行  called after series is initialized.
@@ -134,7 +134,7 @@ window.JChart = function() {
 
     Pie.prototype.initChart = function() {
         var self = this;
-        
+
         var svg = d3.select(self.elem).append("svg")
             .attr("width", self.config.width + self.config.margin.left + self.config.margin.right)
             .attr("height", self.config.height + self.config.margin.top + self.config.margin.bottom)
@@ -439,7 +439,7 @@ window.JChart = function() {
         // Return the modified object
         return target;
     };
-    
+
     function isArray(obj) {
         return Object.prototype.toString.call(obj) === "[object Array]";
     };
@@ -470,6 +470,6 @@ window.JChart = function() {
     } else if (typeof module === "object" && module.exports) {
         module.exports = chart;
     } else {
-        this.jChart = chart;
+        window.jc = chart;
     }
-}
+})(window)

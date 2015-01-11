@@ -1,6 +1,6 @@
 <html>
     <head>
-        <script type="text/javascript" src="../lib/d3.js"></script>
+        <script type="text/javascript" src="../lib/d3.min.js"></script>
         <script type="text/javascript" src="../jChart.js"></script>
     </head>
     <body>
@@ -30,8 +30,8 @@
                 textField: "date"
             }
         };
-        
-        var line = new JChart().Line("#line", data, options);
+
+        var line = jc.Line("#line", data, options);
         line.initChart();
     </script>
 </html>
